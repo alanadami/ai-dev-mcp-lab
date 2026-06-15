@@ -196,7 +196,7 @@ def ler_arquivo_por_caminho_capivara(caminho_arquivo: str) -> dict:
         }
     
 @mcp.tool()
-def buscar_texto_capivara(termo: str) -> dict:
+def buscar_texto_capivara(termo: str, limite_por_repo: int = 20) -> dict:
     """Busca um termo em arquivos de texto dos repositórios do Capivara, retornando arquivo, linha e trecho."""
     repositories = listar_repositorios_capivara()
     ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__", ".venv"}
@@ -213,6 +213,9 @@ def buscar_texto_capivara(termo: str) -> dict:
             continue
 
         for path in root_path.rglob("*"):
+            if len(matches) >= limite_por_repo:
+                break
+
             if any(part in ignored_dirs for part in path.parts):
                 continue
 
@@ -229,11 +232,16 @@ def buscar_texto_capivara(termo: str) -> dict:
 
             for line_number, line in enumerate(lines, start=1):
                 if termo.lower() in line.lower():
+                    excerpt = line.strip()
+
                     matches.append({
-                        "path": str(path),
+                        "path": str(path.relative_to(root_path)),
                         "line": line_number,
-                        "excerpt": line.strip()
+                        "excerpt": excerpt[:200]
                     })
+
+                    if len(matches) >= limite_por_repo:
+                        break
 
         result[repo_name] = matches
 

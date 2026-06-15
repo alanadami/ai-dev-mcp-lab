@@ -36,4 +36,4 @@ from server import (
 #     )
 # )
 print(ping())
-pprint(buscar_texto_capivara("contents"))
+pprint(buscar_texto_capivara("contents", limite_por_repo=5))
