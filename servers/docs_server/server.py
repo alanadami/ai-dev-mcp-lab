@@ -78,6 +78,32 @@ def ler_context_docs_capivara() -> dict:
 
     return result
 
+@mcp.tool()
+def listar_estrutura_repositorios_capivara() -> dict:
+    """Lista a estrutura de primeiro nível dos repositórios do Capivara."""
+    repositories = listar_repositorios_capivara()
+    result = {}
+
+    for repo_name, repo_path in repositories.items():
+        path = Path(repo_path)
+
+        if not path.exists():
+            result[repo_name] = {"exists": False, "items": []}
+            continue
+
+        items = [
+            item.name + ("/" if item.is_dir() else "")
+            for item in path.iterdir()
+            if item.name not in [".git", "node_modules", ".next", "dist", "generated"]
+        ]
+
+        result[repo_name] = {
+            "exists": True,
+            "items": sorted(items)
+        }
+
+    return result
+
 
 if __name__ == "__main__":
     mcp.run()
