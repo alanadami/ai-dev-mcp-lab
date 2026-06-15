@@ -194,6 +194,50 @@ def ler_arquivo_por_caminho_capivara(caminho_arquivo: str) -> dict:
             "path": str(file_path),
             "error": "Arquivo encontrado, mas não pôde ser lido como texto UTF-8."
         }
+    
+@mcp.tool()
+def buscar_texto_capivara(termo: str) -> dict:
+    """Busca um termo em arquivos de texto dos repositórios do Capivara, retornando arquivo, linha e trecho."""
+    repositories = listar_repositorios_capivara()
+    ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__", ".venv"}
+    allowed_extensions = {".md", ".js", ".jsx", ".ts", ".tsx", ".json", ".prisma", ".css"}
+
+    result = {}
+
+    for repo_name, repo_path in repositories.items():
+        matches = []
+        root_path = Path(repo_path)
+
+        if not root_path.exists():
+            result[repo_name] = []
+            continue
+
+        for path in root_path.rglob("*"):
+            if any(part in ignored_dirs for part in path.parts):
+                continue
+
+            if not path.is_file():
+                continue
+
+            if path.suffix not in allowed_extensions:
+                continue
+
+            try:
+                lines = path.read_text(encoding="utf-8").splitlines()
+            except UnicodeDecodeError:
+                continue
+
+            for line_number, line in enumerate(lines, start=1):
+                if termo.lower() in line.lower():
+                    matches.append({
+                        "path": str(path),
+                        "line": line_number,
+                        "excerpt": line.strip()
+                    })
+
+        result[repo_name] = matches
+
+    return result
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ from server import (
     buscar_arquivo_capivara,
     ler_arquivo_capivara,
     ler_arquivo_por_caminho_capivara,
+    buscar_texto_capivara,
 )
 
 # pprint(ping())
@@ -29,9 +30,10 @@ from server import (
 # print(ping())
 # pprint(ler_arquivo_capivara("package.json"))
 # print(ping())
-pprint(
-    ler_arquivo_por_caminho_capivara(
-        r"C:\projeto_unisinos\capivara\capivara-backend\CONTEXT.md"
-    )
-)
+# pprint(
+#     ler_arquivo_por_caminho_capivara(
+#         r"C:\projeto_unisinos\capivara\capivara-backend\CONTEXT.md"
+#     )
+# )
 print(ping())
+pprint(buscar_texto_capivara("contents"))
