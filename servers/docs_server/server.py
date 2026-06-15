@@ -247,6 +247,27 @@ def buscar_texto_capivara(termo: str, limite_por_repo: int = 20) -> dict:
 
     return result
 
+@mcp.tool()
+def listar_arquivos_importantes_capivara() -> dict:
+    """Lista arquivos importantes encontrados nos repositórios do Capivara."""
+    arquivos_importantes = [
+        "package.json",
+        "CONTEXT.md",
+        "README.md",
+        "schema.prisma",
+        "next.config.js",
+        "next.config.mjs",
+        "main.ts",
+        "app.module.ts",
+    ]
+
+    result = {}
+
+    for arquivo in arquivos_importantes:
+        result[arquivo] = buscar_arquivo_capivara(arquivo)
+
+    return result
+
 
 if __name__ == "__main__":
     mcp.run()

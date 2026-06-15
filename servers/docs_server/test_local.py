@@ -11,6 +11,8 @@ from server import (
     ler_arquivo_capivara,
     ler_arquivo_por_caminho_capivara,
     buscar_texto_capivara,
+    listar_arquivos_importantes_capivara,
+    
 )
 
 # pprint(ping())
@@ -35,5 +37,7 @@ from server import (
 #         r"C:\projeto_unisinos\capivara\capivara-backend\CONTEXT.md"
 #     )
 # )
+# print(ping())
+# pprint(buscar_texto_capivara("contents", limite_por_repo=5))
 print(ping())
-pprint(buscar_texto_capivara("contents", limite_por_repo=5))
+pprint(listar_arquivos_importantes_capivara())
