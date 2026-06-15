@@ -27,6 +27,19 @@ def listar_repositorios_capivara() -> dict:
     config = ler_config_capivara()
     return config.get("repositories", {})
 
+@mcp.tool()
+def verificar_caminhos_repositorios_capivara() -> dict:
+    """Verifica se os caminhos dos repositórios configurados existem."""
+    repositories = listar_repositorios_capivara()
+
+    return {
+        name: {
+            "path": path,
+            "exists": Path(path).exists()
+        }
+        for name, path in repositories.items()
+    }
+
 
 if __name__ == "__main__":
     mcp.run()
