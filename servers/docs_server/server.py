@@ -268,6 +268,29 @@ def listar_arquivos_importantes_capivara() -> dict:
 
     return result
 
+@mcp.tool()
+def resumir_estado_basico_capivara() -> dict:
+    """
+    Resume o estado básico do Projeto Capivara com base na configuração,
+    repositórios, caminhos, documentos e arquivos importantes.
+    Ferramenta somente leitura.
+    """
+    config = ler_config_capivara()
+    repositorios = listar_repositorios_capivara()
+    caminhos = verificar_caminhos_repositorios_capivara()
+    docs = listar_docs_capivara()
+    arquivos_importantes = listar_arquivos_importantes_capivara()
+
+    return {
+        "projeto": "Projeto Capivara",
+        "modo": "somente leitura",
+        "configuracao": config,
+        "repositorios": repositorios,
+        "verificacao_caminhos": caminhos,
+        "documentos_encontrados": docs,
+        "arquivos_importantes": arquivos_importantes,
+    }
+
 
 if __name__ == "__main__":
     mcp.run()
