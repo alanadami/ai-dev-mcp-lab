@@ -1,0 +1,23 @@
+{
+  "projectName": "capivara",
+  "repositories": {
+    "backend": "C:\\projeto_unisinos\\capivara\\capivara-backend",
+    "frontUser": "C:\\projeto_unisinos\\capivara\\capivara-front-user",
+    "frontAdmin": "C:\\projeto_unisinos\\capivara\\capivara-front-admin"
+  },
+  "docs": [
+    "CONTEXT.md",
+    "ARCHITECTURE.md",
+    "AI_RULES.md",
+    "PRD.md"
+  ],
+  "rules": {
+    "commitLanguage": "pt-BR",
+    "protectedBranches": ["main"],
+    "allowRead": true,
+    "allowWrite": false,
+    "allowDelete": false,
+    "allowGitPush": false,
+    "allowCommandExecution": false
+  }
+}
