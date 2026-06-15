@@ -20,7 +20,14 @@ def ler_config_capivara() -> dict:
     """Lê a configuração local do Projeto Capivara."""
     with open(CAPIVARA_CONFIG_PATH, "r", encoding="utf-8") as file:
         return json.load(file)
+    
+@mcp.tool()
+def listar_repositorios_capivara() -> dict:
+    """Lista os repositórios configurados para o Projeto Capivara."""
+    config = ler_config_capivara()
+    return config.get("repositories", {})
 
 
 if __name__ == "__main__":
     mcp.run()
+
