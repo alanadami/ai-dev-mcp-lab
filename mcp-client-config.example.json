@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ai-dev-mcp-lab-docs": {
+      "command": "python",
+      "args": [
+        "servers/docs_server/server.py"
+      ],
+      "cwd": "C:/projeto_unisinos/capivara/ai-dev-mcp-lab"
+    }
+  }
+}
