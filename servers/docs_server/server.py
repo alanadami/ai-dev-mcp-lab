@@ -152,6 +152,49 @@ def ler_arquivo_capivara(nome_arquivo: str) -> dict:
 
     return result
 
+@mcp.tool()
+def ler_arquivo_por_caminho_capivara(caminho_arquivo: str) -> dict:
+    """Lê um arquivo por caminho, permitindo apenas arquivos dentro dos repositórios configurados."""
+    repositories = listar_repositorios_capivara()
+    file_path = Path(caminho_arquivo).resolve()
+
+    allowed_roots = [Path(path).resolve() for path in repositories.values()]
+
+    if not any(file_path.is_relative_to(root) for root in allowed_roots):
+        return {
+            "allowed": False,
+            "error": "Arquivo fora dos repositórios permitidos."
+        }
+
+    if not file_path.exists():
+        return {
+            "allowed": True,
+            "exists": False,
+            "error": "Arquivo não encontrado."
+        }
+
+    if not file_path.is_file():
+        return {
+            "allowed": True,
+            "exists": True,
+            "error": "O caminho informado não é um arquivo."
+        }
+
+    try:
+        return {
+            "allowed": True,
+            "exists": True,
+            "path": str(file_path),
+            "content": file_path.read_text(encoding="utf-8")
+        }
+    except UnicodeDecodeError:
+        return {
+            "allowed": True,
+            "exists": True,
+            "path": str(file_path),
+            "error": "Arquivo encontrado, mas não pôde ser lido como texto UTF-8."
+        }
+
 
 if __name__ == "__main__":
     mcp.run()
