@@ -61,6 +61,23 @@ def listar_docs_capivara() -> dict:
 
     return result
 
+@mcp.tool()
+def ler_context_docs_capivara() -> dict:
+    """Lê o conteúdo dos arquivos CONTEXT.md encontrados nos repositórios do Capivara."""
+    docs_por_repo = listar_docs_capivara()
+    result = {}
+
+    for repo_name, doc_paths in docs_por_repo.items():
+        contents = {}
+
+        for doc_path in doc_paths:
+            path = Path(doc_path)
+            contents[path.name] = path.read_text(encoding="utf-8")
+
+        result[repo_name] = contents
+
+    return result
+
 
 if __name__ == "__main__":
     mcp.run()
