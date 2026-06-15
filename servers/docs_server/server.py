@@ -104,6 +104,54 @@ def listar_estrutura_repositorios_capivara() -> dict:
 
     return result
 
+@mcp.tool()
+def buscar_arquivo_capivara(nome_arquivo: str) -> dict:
+    """Busca arquivos pelo nome dentro dos repositórios do Capivara."""
+    repositories = listar_repositorios_capivara()
+    result = {}
+
+    ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__"}
+
+    for repo_name, repo_path in repositories.items():
+        matches = []
+
+        for path in Path(repo_path).rglob(nome_arquivo):
+            if any(part in ignored_dirs for part in path.parts):
+                continue
+
+            matches.append(str(path))
+
+        result[repo_name] = matches
+
+    return result
+
+@mcp.tool()
+def ler_arquivo_capivara(nome_arquivo: str) -> dict:
+    """Busca e lê arquivos pelo nome dentro dos repositórios do Capivara."""
+    arquivos_encontrados = buscar_arquivo_capivara(nome_arquivo)
+    result = {}
+
+    for repo_name, paths in arquivos_encontrados.items():
+        contents = []
+
+        for file_path in paths:
+            path = Path(file_path)
+
+            try:
+                contents.append({
+                    "path": str(path),
+                    "content": path.read_text(encoding="utf-8")
+                })
+            except UnicodeDecodeError:
+                contents.append({
+                    "path": str(path),
+                    "error": "Arquivo encontrado, mas não pôde ser lido como texto UTF-8."
+                })
+
+        result[repo_name] = contents
+
+    return result
+
 
 if __name__ == "__main__":
     mcp.run()

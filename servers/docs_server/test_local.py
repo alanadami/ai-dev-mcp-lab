@@ -7,6 +7,8 @@ from server import (
     listar_docs_capivara,
     ler_context_docs_capivara,
     listar_estrutura_repositorios_capivara,
+    buscar_arquivo_capivara,
+    ler_arquivo_capivara,
     
 )
 
@@ -21,5 +23,9 @@ from server import (
 # pprint(ping())
 # pprint(ler_context_docs_capivara())
 # pprint(ping())
-pprint(listar_estrutura_repositorios_capivara())
+# pprint(listar_estrutura_repositorios_capivara())
+# print(ping())
+# pprint(buscar_arquivo_capivara("package.json"))
+# print(ping())
+pprint(ler_arquivo_capivara("package.json"))
 print(ping())
