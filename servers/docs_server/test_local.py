@@ -3,6 +3,8 @@ from server import (
     listar_repositorios_capivara,
     ping,
     verificar_caminhos_repositorios_capivara,
+    listar_docs_capivara,
+    
 )
 
 print(ping())
@@ -11,3 +13,6 @@ print(ping())
 print(listar_repositorios_capivara())
 print(ping())
 print(verificar_caminhos_repositorios_capivara())
+print(ping())
+print(listar_docs_capivara())
+print(ping())

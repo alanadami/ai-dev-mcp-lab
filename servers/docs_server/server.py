@@ -40,6 +40,27 @@ def verificar_caminhos_repositorios_capivara() -> dict:
         for name, path in repositories.items()
     }
 
+@mcp.tool()
+def listar_docs_capivara() -> dict:
+    """Lista os arquivos de documentação configurados que existem em cada repositório."""
+    config = ler_config_capivara()
+    repositories = config.get("repositories", {})
+    docs = config.get("docs", [])
+
+    result = {}
+
+    for repo_name, repo_path in repositories.items():
+        repo_docs = []
+
+        for doc in docs:
+            doc_path = Path(repo_path) / doc
+            if doc_path.exists():
+                repo_docs.append(str(doc_path))
+
+        result[repo_name] = repo_docs
+
+    return result
+
 
 if __name__ == "__main__":
     mcp.run()
