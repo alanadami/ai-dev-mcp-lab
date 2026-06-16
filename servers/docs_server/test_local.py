@@ -14,6 +14,7 @@ from server import (
     buscar_texto_capivara,
     listar_arquivos_importantes_capivara,
     resumir_estado_basico_capivara,
+    listar_ferramentas_capivara,
 )
 
 
@@ -93,6 +94,9 @@ def testar_resumir_estado_basico_capivara():
     print("\nArquivos importantes:")
     pprint(resultado.get("arquivos_importantes"))
 
+def testar_listar_ferramentas_capivara():
+    pprint(listar_ferramentas_capivara())
+
 
 TESTES = {
     "1": ("ping", testar_ping),
@@ -108,6 +112,7 @@ TESTES = {
     "11": ("buscar_texto_capivara", testar_buscar_texto_capivara),
     "12": ("listar_arquivos_importantes_capivara", testar_listar_arquivos_importantes_capivara),
     "13": ("resumir_estado_basico_capivara", testar_resumir_estado_basico_capivara),
+    "14": ("listar_ferramentas_capivara", testar_listar_ferramentas_capivara),
 }
 
 

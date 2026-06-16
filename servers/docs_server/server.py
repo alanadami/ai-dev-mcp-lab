@@ -291,6 +291,84 @@ def resumir_estado_basico_capivara() -> dict:
         "arquivos_importantes": arquivos_importantes,
     }
 
+@mcp.tool()
+def listar_ferramentas_capivara() -> list[dict]:
+    """
+    Lista as ferramentas MCP disponíveis para consulta ao Projeto Capivara.
+    Ferramenta somente leitura.
+    """
+    return [
+        {
+            "nome": "ping",
+            "descricao": "Testa se o servidor MCP está respondendo.",
+            "exemplo": "Call ping."
+        },
+        {
+            "nome": "ler_config_capivara",
+            "descricao": "Lê a configuração local do Projeto Capivara.",
+            "exemplo": "Call ler_config_capivara."
+        },
+        {
+            "nome": "listar_repositorios_capivara",
+            "descricao": "Lista os repositórios configurados do Projeto Capivara.",
+            "exemplo": "Call listar_repositorios_capivara."
+        },
+        {
+            "nome": "verificar_caminhos_repositorios_capivara",
+            "descricao": "Verifica se os caminhos dos repositórios existem.",
+            "exemplo": "Call verificar_caminhos_repositorios_capivara."
+        },
+        {
+            "nome": "listar_docs_capivara",
+            "descricao": "Lista os documentos configurados encontrados nos repositórios.",
+            "exemplo": "Call listar_docs_capivara."
+        },
+        {
+            "nome": "ler_context_docs_capivara",
+            "descricao": "Lê os arquivos CONTEXT.md encontrados nos repositórios.",
+            "exemplo": "Call ler_context_docs_capivara."
+        },
+        {
+            "nome": "listar_estrutura_repositorios_capivara",
+            "descricao": "Lista a estrutura de primeiro nível dos repositórios.",
+            "exemplo": "Call listar_estrutura_repositorios_capivara."
+        },
+        {
+            "nome": "buscar_arquivo_capivara",
+            "descricao": "Busca arquivos pelo nome nos repositórios do Capivara.",
+            "parametros": ["nome_arquivo"],
+            "exemplo": "Call buscar_arquivo_capivara with nome_arquivo='package.json'."
+        },
+        {
+            "nome": "ler_arquivo_capivara",
+            "descricao": "Busca e lê arquivos pelo nome.",
+            "parametros": ["nome_arquivo"],
+            "exemplo": "Call ler_arquivo_capivara with nome_arquivo='README.md'."
+        },
+        {
+            "nome": "ler_arquivo_por_caminho_capivara",
+            "descricao": "Lê um arquivo por caminho, desde que esteja dentro dos repositórios permitidos.",
+            "parametros": ["caminho_arquivo"],
+            "exemplo": "Call ler_arquivo_por_caminho_capivara with caminho_arquivo='...'."
+        },
+        {
+            "nome": "buscar_texto_capivara",
+            "descricao": "Busca um termo nos arquivos de texto dos repositórios.",
+            "parametros": ["termo", "limite_por_repo"],
+            "exemplo": "Call buscar_texto_capivara with termo='auth' and limite_por_repo=20."
+        },
+        {
+            "nome": "listar_arquivos_importantes_capivara",
+            "descricao": "Lista arquivos importantes encontrados nos repositórios.",
+            "exemplo": "Call listar_arquivos_importantes_capivara."
+        },
+        {
+            "nome": "resumir_estado_basico_capivara",
+            "descricao": "Resume o estado básico do Projeto Capivara.",
+            "exemplo": "Call resumir_estado_basico_capivara."
+        },
+    ]
+
 
 if __name__ == "__main__":
     mcp.run()
