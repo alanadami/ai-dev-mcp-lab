@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/gpt-5.1-codex",
+  "mcp": {
+    "ai-dev-mcp-lab-docs": {
+      "type": "local",
+      "command": ["python", "servers/docs_server/server.py"],
+      "enabled": true
+    }
+  }
+}
