@@ -47,3 +47,23 @@ Os repositórios analisados serão configurados por caminho local, por exemplo:
 capivara-backend
 capivara-front-user
 capivara-front-admin
+
+
+## MCP com opencode
+
+Este laboratório já possui um servidor MCP local em Python para consulta ao Projeto Capivara.
+
+Servidor configurado:
+
+- Nome: `ai-dev-mcp-lab-docs`
+- Arquivo: `servers/docs_server/server.py`
+- Cliente testado: `opencode`
+- Modo atual: somente leitura
+
+Ferramentas validadas via MCP:
+
+- `ping`
+- `listar_repositorios_capivara`
+- `resumir_estado_basico_capivara`
+
+Observação: o arquivo global do opencode em `AppData/Roaming` não deve ser versionado. Chaves de API nunca devem ser salvas no repositório.
