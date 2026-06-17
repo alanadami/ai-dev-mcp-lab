@@ -1,560 +1,70 @@
-import json
-from pathlib import Path
-
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("AI Dev MCP Lab - Docs Server")
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
-CAPIVARA_CONFIG_PATH = ROOT_DIR / "projects" / "capivara.config.json"
-
-
-@mcp.tool()
-def ping() -> str:
-    """Testa se o servidor MCP está respondendo."""
-    return "pong"
-
-
-@mcp.tool()
-def ler_config_capivara() -> dict:
-    """Lê a configuração local do Projeto Capivara."""
-    with open(CAPIVARA_CONFIG_PATH, "r", encoding="utf-8") as file:
-        return json.load(file)
-    
-@mcp.tool()
-def listar_repositorios_capivara() -> dict:
-    """Lista os repositórios configurados para o Projeto Capivara."""
-    config = ler_config_capivara()
-    return config.get("repositories", {})
-
-@mcp.tool()
-def verificar_caminhos_repositorios_capivara() -> dict:
-    """Verifica se os caminhos dos repositórios configurados existem."""
-    repositories = listar_repositorios_capivara()
-
-    return {
-        name: {
-            "path": path,
-            "exists": Path(path).exists()
-        }
-        for name, path in repositories.items()
-    }
-
-@mcp.tool()
-def listar_docs_capivara() -> dict:
-    """Lista os arquivos de documentação configurados que existem em cada repositório."""
-    config = ler_config_capivara()
-    repositories = config.get("repositories", {})
-    docs = config.get("docs", [])
-
-    result = {}
-
-    for repo_name, repo_path in repositories.items():
-        repo_docs = []
-
-        for doc in docs:
-            doc_path = Path(repo_path) / doc
-            if doc_path.exists():
-                repo_docs.append(str(doc_path))
-
-        result[repo_name] = repo_docs
-
-    return result
-
-@mcp.tool()
-def ler_context_docs_capivara() -> dict:
-    """Lê o conteúdo dos arquivos CONTEXT.md encontrados nos repositórios do Capivara."""
-    docs_por_repo = listar_docs_capivara()
-    result = {}
-
-    for repo_name, doc_paths in docs_por_repo.items():
-        contents = {}
-
-        for doc_path in doc_paths:
-            path = Path(doc_path)
-            contents[path.name] = path.read_text(encoding="utf-8")
-
-        result[repo_name] = contents
-
-    return result
-
-@mcp.tool()
-def listar_estrutura_repositorios_capivara() -> dict:
-    """Lista a estrutura de primeiro nível dos repositórios do Capivara."""
-    repositories = listar_repositorios_capivara()
-    result = {}
-
-    for repo_name, repo_path in repositories.items():
-        path = Path(repo_path)
-
-        if not path.exists():
-            result[repo_name] = {"exists": False, "items": []}
-            continue
-
-        items = [
-            item.name + ("/" if item.is_dir() else "")
-            for item in path.iterdir()
-            if item.name not in [".git", "node_modules", ".next", "dist", "generated"]
-        ]
-
-        result[repo_name] = {
-            "exists": True,
-            "items": sorted(items)
-        }
-
-    return result
-
-@mcp.tool()
-def buscar_arquivo_capivara(nome_arquivo: str) -> dict:
-    """Busca arquivos pelo nome dentro dos repositórios do Capivara."""
-    repositories = listar_repositorios_capivara()
-    result = {}
-
-    ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__"}
-
-    for repo_name, repo_path in repositories.items():
-        matches = []
-
-        for path in Path(repo_path).rglob(nome_arquivo):
-            if any(part in ignored_dirs for part in path.parts):
-                continue
-
-            matches.append(str(path))
-
-        result[repo_name] = matches
-
-    return result
-
-@mcp.tool()
-def ler_arquivo_capivara(nome_arquivo: str) -> dict:
-    """Busca e lê arquivos pelo nome dentro dos repositórios do Capivara."""
-    arquivos_encontrados = buscar_arquivo_capivara(nome_arquivo)
-    result = {}
-
-    for repo_name, paths in arquivos_encontrados.items():
-        contents = []
-
-        for file_path in paths:
-            path = Path(file_path)
-
-            try:
-                contents.append({
-                    "path": str(path),
-                    "content": path.read_text(encoding="utf-8")
-                })
-            except UnicodeDecodeError:
-                contents.append({
-                    "path": str(path),
-                    "error": "Arquivo encontrado, mas não pôde ser lido como texto UTF-8."
-                })
-
-        result[repo_name] = contents
-
-    return result
-
-@mcp.tool()
-def ler_arquivo_por_caminho_capivara(caminho_arquivo: str) -> dict:
-    """Lê um arquivo por caminho, permitindo apenas arquivos dentro dos repositórios configurados."""
-    repositories = listar_repositorios_capivara()
-    file_path = Path(caminho_arquivo).resolve()
-
-    allowed_roots = [Path(path).resolve() for path in repositories.values()]
-
-    if not any(file_path.is_relative_to(root) for root in allowed_roots):
-        return {
-            "allowed": False,
-            "error": "Arquivo fora dos repositórios permitidos."
-        }
-
-    if not file_path.exists():
-        return {
-            "allowed": True,
-            "exists": False,
-            "error": "Arquivo não encontrado."
-        }
-
-    if not file_path.is_file():
-        return {
-            "allowed": True,
-            "exists": True,
-            "error": "O caminho informado não é um arquivo."
-        }
-
-    try:
-        return {
-            "allowed": True,
-            "exists": True,
-            "path": str(file_path),
-            "content": file_path.read_text(encoding="utf-8")
-        }
-    except UnicodeDecodeError:
-        return {
-            "allowed": True,
-            "exists": True,
-            "path": str(file_path),
-            "error": "Arquivo encontrado, mas não pôde ser lido como texto UTF-8."
-        }
-    
-@mcp.tool()
-def buscar_texto_capivara(termo: str, limite_por_repo: int = 20) -> dict:
-    """Busca um termo em arquivos de texto dos repositórios do Capivara, retornando arquivo, linha e trecho."""
-    repositories = listar_repositorios_capivara()
-    ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__", ".venv"}
-    allowed_extensions = {".md", ".js", ".jsx", ".ts", ".tsx", ".json", ".prisma", ".css"}
-
-    result = {}
-
-    for repo_name, repo_path in repositories.items():
-        matches = []
-        root_path = Path(repo_path)
-
-        if not root_path.exists():
-            result[repo_name] = []
-            continue
-
-        for path in root_path.rglob("*"):
-            if len(matches) >= limite_por_repo:
-                break
-
-            if any(part in ignored_dirs for part in path.parts):
-                continue
-
-            if not path.is_file():
-                continue
-
-            if path.suffix not in allowed_extensions:
-                continue
-
-            try:
-                lines = path.read_text(encoding="utf-8").splitlines()
-            except UnicodeDecodeError:
-                continue
-
-            for line_number, line in enumerate(lines, start=1):
-                if termo.lower() in line.lower():
-                    excerpt = line.strip()
-
-                    matches.append({
-                        "path": str(path.relative_to(root_path)),
-                        "line": line_number,
-                        "excerpt": excerpt[:200]
-                    })
-
-                    if len(matches) >= limite_por_repo:
-                        break
-
-        result[repo_name] = matches
-
-    return result
-
-@mcp.tool()
-def listar_arquivos_importantes_capivara() -> dict:
-    """Lista arquivos importantes encontrados nos repositórios do Capivara."""
-    arquivos_importantes = [
-        "package.json",
-        "CONTEXT.md",
-        "README.md",
-        "schema.prisma",
-        "next.config.js",
-        "next.config.mjs",
-        "main.ts",
-        "app.module.ts",
-    ]
-
-    result = {}
-
-    for arquivo in arquivos_importantes:
-        result[arquivo] = buscar_arquivo_capivara(arquivo)
-
-    return result
-
-@mcp.tool()
-def resumir_estado_basico_capivara() -> dict:
-    """
-    Resume o estado básico do Projeto Capivara com base na configuração,
-    repositórios, caminhos, documentos e arquivos importantes.
-    Ferramenta somente leitura.
-    """
-    config = ler_config_capivara()
-    repositorios = listar_repositorios_capivara()
-    caminhos = verificar_caminhos_repositorios_capivara()
-    docs = listar_docs_capivara()
-    arquivos_importantes = listar_arquivos_importantes_capivara()
-
-    return {
-        "projeto": "Projeto Capivara",
-        "modo": "somente leitura",
-        "configuracao": config,
-        "repositorios": repositorios,
-        "verificacao_caminhos": caminhos,
-        "documentos_encontrados": docs,
-        "arquivos_importantes": arquivos_importantes,
-    }
-
-@mcp.tool()
-def listar_ferramentas_capivara() -> list[dict]:
-    """
-    Lista as ferramentas MCP disponíveis para consulta ao Projeto Capivara.
-    Ferramenta somente leitura.
-    """
-    return [
-        {
-            "nome": "ping",
-            "descricao": "Testa se o servidor MCP está respondendo.",
-            "exemplo": "Call ping."
-        },
-        {
-            "nome": "ler_config_capivara",
-            "descricao": "Lê a configuração local do Projeto Capivara.",
-            "exemplo": "Call ler_config_capivara."
-        },
-        {
-            "nome": "listar_repositorios_capivara",
-            "descricao": "Lista os repositórios configurados do Projeto Capivara.",
-            "exemplo": "Call listar_repositorios_capivara."
-        },
-        {
-            "nome": "verificar_caminhos_repositorios_capivara",
-            "descricao": "Verifica se os caminhos dos repositórios existem.",
-            "exemplo": "Call verificar_caminhos_repositorios_capivara."
-        },
-        {
-            "nome": "listar_docs_capivara",
-            "descricao": "Lista os documentos configurados encontrados nos repositórios.",
-            "exemplo": "Call listar_docs_capivara."
-        },
-        {
-            "nome": "ler_context_docs_capivara",
-            "descricao": "Lê os arquivos CONTEXT.md encontrados nos repositórios.",
-            "exemplo": "Call ler_context_docs_capivara."
-        },
-        {
-            "nome": "listar_estrutura_repositorios_capivara",
-            "descricao": "Lista a estrutura de primeiro nível dos repositórios.",
-            "exemplo": "Call listar_estrutura_repositorios_capivara."
-        },
-        {
-            "nome": "buscar_arquivo_capivara",
-            "descricao": "Busca arquivos pelo nome nos repositórios do Capivara.",
-            "parametros": ["nome_arquivo"],
-            "exemplo": "Call buscar_arquivo_capivara with nome_arquivo='package.json'."
-        },
-        {
-            "nome": "ler_arquivo_capivara",
-            "descricao": "Busca e lê arquivos pelo nome.",
-            "parametros": ["nome_arquivo"],
-            "exemplo": "Call ler_arquivo_capivara with nome_arquivo='README.md'."
-        },
-        {
-            "nome": "ler_arquivo_por_caminho_capivara",
-            "descricao": "Lê um arquivo por caminho, desde que esteja dentro dos repositórios permitidos.",
-            "parametros": ["caminho_arquivo"],
-            "exemplo": "Call ler_arquivo_por_caminho_capivara with caminho_arquivo='...'."
-        },
-        {
-            "nome": "buscar_texto_capivara",
-            "descricao": "Busca um termo nos arquivos de texto dos repositórios.",
-            "parametros": ["termo", "limite_por_repo"],
-            "exemplo": "Call buscar_texto_capivara with termo='auth' and limite_por_repo=20."
-        },
-        {
-            "nome": "listar_arquivos_importantes_capivara",
-            "descricao": "Lista arquivos importantes encontrados nos repositórios.",
-            "exemplo": "Call listar_arquivos_importantes_capivara."
-        },
-        {
-            "nome": "resumir_contexto_capivara",
-            "descricao": "Resume os arquivos CONTEXT.md dos repositórios do Capivara.",
-            "exemplo": "Call resumir_contexto_capivara."
-        },        
-        {
-            "nome": "resumir_estado_basico_capivara",
-            "descricao": "Resume o estado básico do Projeto Capivara.",
-            "exemplo": "Call resumir_estado_basico_capivara."
-        },
-        {
-            "nome": "listar_endpoints_backend_capivara",
-            "descricao": "Lista possíveis endpoints do backend NestJS do Capivara.",
-            "exemplo": "Call listar_endpoints_backend_capivara."
-        },
-        {
-            "nome": "listar_paginas_fronts_capivara",
-            "descricao": "Lista possíveis páginas/rotas dos frontends Next.js do Capivara.",
-            "exemplo": "Call listar_paginas_fronts_capivara."
-        },
-        {
-            "nome": "diagnosticar_autenticacao_capivara",
-            "descricao": "Busca indícios de autenticação, JWT, guards, login e token nos repositórios.",
-            "exemplo": "Call diagnosticar_autenticacao_capivara."
-        },
-
-    ]
-
-@mcp.tool()
-def resumir_contexto_capivara() -> dict:
-    """
-    Resume os arquivos CONTEXT.md encontrados nos repositórios do Capivara.
-    Ferramenta somente leitura.
-    """
-    contextos = ler_context_docs_capivara()
-    result = {}
-
-    for repo_name, docs in contextos.items():
-        context_md = docs.get("CONTEXT.md")
-
-        if not context_md:
-            result[repo_name] = {
-                "encontrado": False,
-                "resumo": "CONTEXT.md não encontrado."
-            }
-            continue
-
-        linhas = [
-            linha.strip()
-            for linha in context_md.splitlines()
-            if linha.strip()
-        ]
-
-        titulos = [
-            linha
-            for linha in linhas
-            if linha.startswith("#")
-        ]
-
-        tecnologias = [
-            linha
-            for linha in linhas
-            if any(
-                termo in linha.lower()
-                for termo in ["next", "nestjs", "prisma", "postgres", "passport", "jwt", "docker", "rancher"]
-            )
-        ]
-
-        portas = [
-            linha
-            for linha in linhas
-            if "localhost" in linha.lower() or "porta" in linha.lower()
-        ]
-
-        result[repo_name] = {
-            "encontrado": True,
-            "titulos": titulos[:20],
-            "possiveis_tecnologias": tecnologias[:20],
-            "possiveis_portas": portas[:20],
-            "total_linhas_relevantes": len(linhas)
-        }
-
-    return result
-
-@mcp.tool()
-def listar_paginas_fronts_capivara() -> dict:
-    """
-    Lista possíveis páginas/rotas dos frontends Next.js do Capivara.
-    Ferramenta somente leitura.
-    """
-    repositories = listar_repositorios_capivara()
-    result = {}
-
-    ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__"}
-
-    for repo_name in ["frontUser", "frontAdmin"]:
-        repo_path = Path(repositories.get(repo_name, ""))
-
-        if not repo_path.exists():
-            result[repo_name] = []
-            continue
-
-        pages = []
-
-        for path in repo_path.rglob("page.js"):
-            if any(part in ignored_dirs for part in path.parts):
-                continue
-
-            relative_path = path.relative_to(repo_path)
-            route_parts = list(relative_path.parts)
-
-            if "app" in route_parts:
-                app_index = route_parts.index("app")
-                route = route_parts[app_index + 1:-1]
-                route_path = "/" + "/".join(route) if route else "/"
-
-                pages.append({
-                    "arquivo": str(relative_path),
-                    "rota": route_path
-                })
-
-        result[repo_name] = sorted(pages, key=lambda item: item["rota"])
-
-    return result
-
-
-@mcp.tool()
-def diagnosticar_autenticacao_capivara() -> dict:
-    """
-    Busca indícios de autenticação, JWT, guards, login e token nos repositórios do Capivara.
-    Ferramenta somente leitura.
-    """
-    termos = [
-        "auth",
-        "jwt",
-        "passport",
-        "guard",
-        "login",
-        "token",
-        "Authorization",
-        "Bearer",
-        "sessionStorage",
-    ]
-
-    result = {}
-
-    for termo in termos:
-        result[termo] = buscar_texto_capivara(termo, limite_por_repo=10)
-
-    return result
-
-@mcp.tool()
-def listar_endpoints_backend_capivara() -> list[dict]:
-    """
-    Lista possíveis endpoints do backend NestJS do Capivara.
-    Ferramenta somente leitura.
-    """
-    repositories = listar_repositorios_capivara()
-    backend_path = Path(repositories.get("backend", ""))
-
-    if not backend_path.exists():
-        return []
-
-    ignored_dirs = {".git", "node_modules", "dist", "generated", "__pycache__"}
-    controllers = []
-
-    for path in backend_path.rglob("*.controller.ts"):
-        if any(part in ignored_dirs for part in path.parts):
-            continue
-
-        try:
-            lines = path.read_text(encoding="utf-8").splitlines()
-        except UnicodeDecodeError:
-            continue
-
-        controller_base = ""
-
-        for line_number, line in enumerate(lines, start=1):
-            stripped = line.strip()
-
-            if stripped.startswith("@Controller"):
-                controller_base = stripped
-
-            if stripped.startswith(("@Get", "@Post", "@Patch", "@Put", "@Delete")):
-                controllers.append({
-                    "arquivo": str(path.relative_to(backend_path)),
-                    "linha": line_number,
-                    "controller": controller_base,
-                    "rota": stripped,
-                })
-
-    return controllers
+from tools.basic_tools import (  # noqa: E402
+    listar_ferramentas_capivara,
+    ping,
+    registrar_basic_tools,
+)
+from tools.config_tools import (  # noqa: E402
+    ler_config_capivara,
+    ler_context_docs_capivara,
+    listar_docs_capivara,
+    listar_estrutura_repositorios_capivara,
+    listar_repositorios_capivara,
+    registrar_config_tools,
+    verificar_caminhos_repositorios_capivara,
+)
+from tools.file_tools import (  # noqa: E402
+    buscar_arquivo_capivara,
+    buscar_texto_capivara,
+    ler_arquivo_capivara,
+    ler_arquivo_por_caminho_capivara,
+    listar_arquivos_importantes_capivara,
+    registrar_file_tools,
+)
+from tools.inspection_tools import (  # noqa: E402
+    diagnosticar_autenticacao_capivara,
+    listar_endpoints_backend_capivara,
+    listar_paginas_fronts_capivara,
+    mapear_integracao_fronts_backend_capivara,
+    registrar_inspection_tools,
+)
+from tools.summary_tools import (  # noqa: E402
+    registrar_summary_tools,
+    resumir_contexto_capivara,
+    resumir_estado_basico_capivara,
+)
+
+registrar_basic_tools(mcp)
+registrar_config_tools(mcp)
+registrar_file_tools(mcp)
+registrar_summary_tools(mcp)
+registrar_inspection_tools(mcp)
+
+__all__ = [
+    "mcp",
+    "ping",
+    "listar_ferramentas_capivara",
+    "ler_config_capivara",
+    "listar_repositorios_capivara",
+    "verificar_caminhos_repositorios_capivara",
+    "listar_docs_capivara",
+    "ler_context_docs_capivara",
+    "listar_estrutura_repositorios_capivara",
+    "buscar_arquivo_capivara",
+    "ler_arquivo_capivara",
+    "ler_arquivo_por_caminho_capivara",
+    "buscar_texto_capivara",
+    "listar_arquivos_importantes_capivara",
+    "resumir_estado_basico_capivara",
+    "resumir_contexto_capivara",
+    "listar_endpoints_backend_capivara",
+    "listar_paginas_fronts_capivara",
+    "diagnosticar_autenticacao_capivara",
+    "mapear_integracao_fronts_backend_capivara",
+]
 
 if __name__ == "__main__":
     mcp.run()
-

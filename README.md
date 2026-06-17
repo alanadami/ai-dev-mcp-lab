@@ -99,5 +99,6 @@ Ferramentas de resumo e diagnóstico:
 - `listar_endpoints_backend_capivara`
 - `listar_paginas_fronts_capivara`
 - `diagnosticar_autenticacao_capivara`
+- `mapear_integracao_fronts_backend_capivara`
 
 Todas as ferramentas atuais são somente leitura.

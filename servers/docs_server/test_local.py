@@ -1,24 +1,25 @@
 from pprint import pprint
 
 from server import (
-    ping,
-    ler_config_capivara,
-    listar_repositorios_capivara,
-    verificar_caminhos_repositorios_capivara,
-    listar_docs_capivara,
-    ler_context_docs_capivara,
-    listar_estrutura_repositorios_capivara,
     buscar_arquivo_capivara,
+    buscar_texto_capivara,
+    diagnosticar_autenticacao_capivara,
     ler_arquivo_capivara,
     ler_arquivo_por_caminho_capivara,
-    buscar_texto_capivara,
+    ler_config_capivara,
+    ler_context_docs_capivara,
     listar_arquivos_importantes_capivara,
-    resumir_estado_basico_capivara,
-    listar_ferramentas_capivara,
-    resumir_contexto_capivara,
+    listar_docs_capivara,
     listar_endpoints_backend_capivara,
+    listar_ferramentas_capivara,
     listar_paginas_fronts_capivara,
-    diagnosticar_autenticacao_capivara,
+    listar_repositorios_capivara,
+    listar_estrutura_repositorios_capivara,
+    mapear_integracao_fronts_backend_capivara,
+    ping,
+    resumir_contexto_capivara,
+    resumir_estado_basico_capivara,
+    verificar_caminhos_repositorios_capivara,
 )
 
 
@@ -30,6 +31,9 @@ def testar_listar_paginas_fronts_capivara():
 
 def testar_diagnosticar_autenticacao_capivara():
     pprint(diagnosticar_autenticacao_capivara())
+
+def testar_mapear_integracao_fronts_backend_capivara():
+    pprint(mapear_integracao_fronts_backend_capivara())
 
 def testar_listar_endpoints_backend_capivara():
     pprint(listar_endpoints_backend_capivara())
@@ -133,6 +137,7 @@ TESTES = {
     "16": ("listar_endpoints_backend_capivara", testar_listar_endpoints_backend_capivara),
     "17": ("listar_paginas_fronts_capivara", testar_listar_paginas_fronts_capivara),
     "18": ("diagnosticar_autenticacao_capivara", testar_diagnosticar_autenticacao_capivara),
+    "19": ("mapear_integracao_fronts_backend_capivara", testar_mapear_integracao_fronts_backend_capivara),
 }
 
 
