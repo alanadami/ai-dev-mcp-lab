@@ -15,11 +15,15 @@ from server import (
     listar_arquivos_importantes_capivara,
     resumir_estado_basico_capivara,
     listar_ferramentas_capivara,
+    resumir_contexto_capivara,
 )
 
 
 def testar_ping():
     print(ping())
+
+def testar_resumir_contexto_capivara():
+    pprint(resumir_contexto_capivara())
 
 
 def testar_ler_config_capivara():
@@ -113,6 +117,7 @@ TESTES = {
     "12": ("listar_arquivos_importantes_capivara", testar_listar_arquivos_importantes_capivara),
     "13": ("resumir_estado_basico_capivara", testar_resumir_estado_basico_capivara),
     "14": ("listar_ferramentas_capivara", testar_listar_ferramentas_capivara),
+    "15": ("resumir_contexto_capivara", testar_resumir_contexto_capivara),
 }
 
 

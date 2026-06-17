@@ -363,12 +363,73 @@ def listar_ferramentas_capivara() -> list[dict]:
             "exemplo": "Call listar_arquivos_importantes_capivara."
         },
         {
+            "nome": "resumir_contexto_capivara",
+            "descricao": "Resume os arquivos CONTEXT.md dos repositórios do Capivara.",
+            "exemplo": "Call resumir_contexto_capivara."
+        },        
+        {
             "nome": "resumir_estado_basico_capivara",
             "descricao": "Resume o estado básico do Projeto Capivara.",
             "exemplo": "Call resumir_estado_basico_capivara."
         },
+
     ]
 
+@mcp.tool()
+def resumir_contexto_capivara() -> dict:
+    """
+    Resume os arquivos CONTEXT.md encontrados nos repositórios do Capivara.
+    Ferramenta somente leitura.
+    """
+    contextos = ler_context_docs_capivara()
+    result = {}
+
+    for repo_name, docs in contextos.items():
+        context_md = docs.get("CONTEXT.md")
+
+        if not context_md:
+            result[repo_name] = {
+                "encontrado": False,
+                "resumo": "CONTEXT.md não encontrado."
+            }
+            continue
+
+        linhas = [
+            linha.strip()
+            for linha in context_md.splitlines()
+            if linha.strip()
+        ]
+
+        titulos = [
+            linha
+            for linha in linhas
+            if linha.startswith("#")
+        ]
+
+        tecnologias = [
+            linha
+            for linha in linhas
+            if any(
+                termo in linha.lower()
+                for termo in ["next", "nestjs", "prisma", "postgres", "passport", "jwt", "docker", "rancher"]
+            )
+        ]
+
+        portas = [
+            linha
+            for linha in linhas
+            if "localhost" in linha.lower() or "porta" in linha.lower()
+        ]
+
+        result[repo_name] = {
+            "encontrado": True,
+            "titulos": titulos[:20],
+            "possiveis_tecnologias": tecnologias[:20],
+            "possiveis_portas": portas[:20],
+            "total_linhas_relevantes": len(linhas)
+        }
+
+    return result
 
 if __name__ == "__main__":
     mcp.run()
