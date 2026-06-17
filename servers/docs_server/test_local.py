@@ -16,11 +16,23 @@ from server import (
     resumir_estado_basico_capivara,
     listar_ferramentas_capivara,
     resumir_contexto_capivara,
+    listar_endpoints_backend_capivara,
+    listar_paginas_fronts_capivara,
+    diagnosticar_autenticacao_capivara,
 )
 
 
 def testar_ping():
     print(ping())
+
+def testar_listar_paginas_fronts_capivara():
+    pprint(listar_paginas_fronts_capivara())
+
+def testar_diagnosticar_autenticacao_capivara():
+    pprint(diagnosticar_autenticacao_capivara())
+
+def testar_listar_endpoints_backend_capivara():
+    pprint(listar_endpoints_backend_capivara())
 
 def testar_resumir_contexto_capivara():
     pprint(resumir_contexto_capivara())
@@ -118,6 +130,9 @@ TESTES = {
     "13": ("resumir_estado_basico_capivara", testar_resumir_estado_basico_capivara),
     "14": ("listar_ferramentas_capivara", testar_listar_ferramentas_capivara),
     "15": ("resumir_contexto_capivara", testar_resumir_contexto_capivara),
+    "16": ("listar_endpoints_backend_capivara", testar_listar_endpoints_backend_capivara),
+    "17": ("listar_paginas_fronts_capivara", testar_listar_paginas_fronts_capivara),
+    "18": ("diagnosticar_autenticacao_capivara", testar_diagnosticar_autenticacao_capivara),
 }
 
 

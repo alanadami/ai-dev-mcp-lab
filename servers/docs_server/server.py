@@ -372,6 +372,21 @@ def listar_ferramentas_capivara() -> list[dict]:
             "descricao": "Resume o estado básico do Projeto Capivara.",
             "exemplo": "Call resumir_estado_basico_capivara."
         },
+        {
+            "nome": "listar_endpoints_backend_capivara",
+            "descricao": "Lista possíveis endpoints do backend NestJS do Capivara.",
+            "exemplo": "Call listar_endpoints_backend_capivara."
+        },
+        {
+            "nome": "listar_paginas_fronts_capivara",
+            "descricao": "Lista possíveis páginas/rotas dos frontends Next.js do Capivara.",
+            "exemplo": "Call listar_paginas_fronts_capivara."
+        },
+        {
+            "nome": "diagnosticar_autenticacao_capivara",
+            "descricao": "Busca indícios de autenticação, JWT, guards, login e token nos repositórios.",
+            "exemplo": "Call diagnosticar_autenticacao_capivara."
+        },
 
     ]
 
@@ -430,6 +445,115 @@ def resumir_contexto_capivara() -> dict:
         }
 
     return result
+
+@mcp.tool()
+def listar_paginas_fronts_capivara() -> dict:
+    """
+    Lista possíveis páginas/rotas dos frontends Next.js do Capivara.
+    Ferramenta somente leitura.
+    """
+    repositories = listar_repositorios_capivara()
+    result = {}
+
+    ignored_dirs = {".git", "node_modules", ".next", "dist", "generated", "__pycache__"}
+
+    for repo_name in ["frontUser", "frontAdmin"]:
+        repo_path = Path(repositories.get(repo_name, ""))
+
+        if not repo_path.exists():
+            result[repo_name] = []
+            continue
+
+        pages = []
+
+        for path in repo_path.rglob("page.js"):
+            if any(part in ignored_dirs for part in path.parts):
+                continue
+
+            relative_path = path.relative_to(repo_path)
+            route_parts = list(relative_path.parts)
+
+            if "app" in route_parts:
+                app_index = route_parts.index("app")
+                route = route_parts[app_index + 1:-1]
+                route_path = "/" + "/".join(route) if route else "/"
+
+                pages.append({
+                    "arquivo": str(relative_path),
+                    "rota": route_path
+                })
+
+        result[repo_name] = sorted(pages, key=lambda item: item["rota"])
+
+    return result
+
+
+@mcp.tool()
+def diagnosticar_autenticacao_capivara() -> dict:
+    """
+    Busca indícios de autenticação, JWT, guards, login e token nos repositórios do Capivara.
+    Ferramenta somente leitura.
+    """
+    termos = [
+        "auth",
+        "jwt",
+        "passport",
+        "guard",
+        "login",
+        "token",
+        "Authorization",
+        "Bearer",
+        "sessionStorage",
+    ]
+
+    result = {}
+
+    for termo in termos:
+        result[termo] = buscar_texto_capivara(termo, limite_por_repo=10)
+
+    return result
+
+@mcp.tool()
+def listar_endpoints_backend_capivara() -> list[dict]:
+    """
+    Lista possíveis endpoints do backend NestJS do Capivara.
+    Ferramenta somente leitura.
+    """
+    repositories = listar_repositorios_capivara()
+    backend_path = Path(repositories.get("backend", ""))
+
+    if not backend_path.exists():
+        return []
+
+    ignored_dirs = {".git", "node_modules", "dist", "generated", "__pycache__"}
+    controllers = []
+
+    for path in backend_path.rglob("*.controller.ts"):
+        if any(part in ignored_dirs for part in path.parts):
+            continue
+
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except UnicodeDecodeError:
+            continue
+
+        controller_base = ""
+
+        for line_number, line in enumerate(lines, start=1):
+            stripped = line.strip()
+
+            if stripped.startswith("@Controller"):
+                controller_base = stripped
+
+            if stripped.startswith(("@Get", "@Post", "@Patch", "@Put", "@Delete")):
+                controllers.append({
+                    "arquivo": str(path.relative_to(backend_path)),
+                    "linha": line_number,
+                    "controller": controller_base,
+                    "rota": stripped,
+                })
+
+    return controllers
 
 if __name__ == "__main__":
     mcp.run()
