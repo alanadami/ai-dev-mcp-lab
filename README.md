@@ -47,7 +47,7 @@ Os repositórios analisados serão configurados por caminho local, por exemplo:
 capivara-backend
 capivara-front-user
 capivara-front-admin
-
+```
 
 ## MCP com opencode
 
@@ -67,3 +67,37 @@ Ferramentas validadas via MCP:
 - `resumir_estado_basico_capivara`
 
 Observação: o arquivo global do opencode em `AppData/Roaming` não deve ser versionado. Chaves de API nunca devem ser salvas no repositório.
+
+## Ferramentas MCP disponíveis
+
+Ferramentas gerais:
+
+- `ping`
+- `listar_ferramentas_capivara`
+
+Ferramentas de configuração e estrutura:
+
+- `ler_config_capivara`
+- `listar_repositorios_capivara`
+- `verificar_caminhos_repositorios_capivara`
+- `listar_docs_capivara`
+- `ler_context_docs_capivara`
+- `listar_estrutura_repositorios_capivara`
+
+Ferramentas de arquivos e busca:
+
+- `buscar_arquivo_capivara`
+- `ler_arquivo_capivara`
+- `ler_arquivo_por_caminho_capivara`
+- `buscar_texto_capivara`
+- `listar_arquivos_importantes_capivara`
+
+Ferramentas de resumo e diagnóstico:
+
+- `resumir_estado_basico_capivara`
+- `resumir_contexto_capivara`
+- `listar_endpoints_backend_capivara`
+- `listar_paginas_fronts_capivara`
+- `diagnosticar_autenticacao_capivara`
+
+Todas as ferramentas atuais são somente leitura.
